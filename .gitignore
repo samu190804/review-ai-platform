@@ -1,1 +1,10 @@
 .env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.venv/
+dist/
+node_modules/
+target/
+.vscode/

@@ -6,7 +6,7 @@ Es un proyecto de portfolio, organizado como monorepo.
 
 ## Estado
 
-En desarrollo. Fase actual: 1 (estructura y contrato). Ver el plan más abajo.
+En desarrollo. Fase actual: 0 (estructura y contrato). Ver el plan más abajo.
 
 ## Arquitectura
 
