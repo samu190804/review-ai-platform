@@ -30,7 +30,7 @@ def _check_rules(text: str) -> list[str]:
 
 def moderate(text: str) -> dict:
     reasons = _check_rules(text)
-    scores = {k: round(float(v), 3) for k, v in _model.predict(text).items()}
+    scores = {category: round(float(value), 3) for category, value in _model.predict(text).items()}
     for category, reason in CATEGORY_REASONS.items():
         if scores.get(category, 0.0) >= TOXIC_THRESHOLD:
             reasons.append(reason)
