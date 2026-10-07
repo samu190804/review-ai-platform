@@ -6,7 +6,7 @@ Es un proyecto de portfolio, organizado como monorepo.
 
 ## Estado
 
-En desarrollo. Fase actual: 1 (microservicio FastAPI y Dockerfile). Ver el plan más abajo.
+En desarrollo. "Fase actual: 2 (backend Spring Boot y PostgreSQL)". Ver el plan más abajo.
 
 ## Arquitectura
 
