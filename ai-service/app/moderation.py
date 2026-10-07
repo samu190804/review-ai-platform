@@ -3,7 +3,7 @@ import re
 from detoxify import Detoxify
 
 _model = Detoxify("multilingual")
-TOXIC_THRESHOLD = float(os.getenv("TOXIC_THRESHOLD", "0.7"))
+TOXIC_THRESHOLD = float(os.getenv("TOXIC_THRESHOLD", "0.65"))
 MIN_LENGTH = int(os.getenv("MIN_LENGTH", "10"))
 
 # Categorías que devuelve Detoxify y el motivo legible que se informa al marcar.
