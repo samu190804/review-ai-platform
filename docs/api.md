@@ -121,5 +121,5 @@ Respuesta 200 cuando el servicio funciona.
 ## Notas
 
 - **Estados de reseña.** Este servicio no los gestiona. `PENDING`, `APPROVED` y `REJECTED` son responsabilidad del backend, que decide el estado a partir de `moderation.flagged`.
-- **Texto largo.** El modelo de puntuación solo analiza el inicio del texto. Una reseña de hasta 2000 caracteres se acepta, pero la puntuación se calcula con los primeros 512.
+- **Texto largo.** El modelo de puntuación solo analiza el inicio del texto. Una reseña de hasta 2000 caracteres se acepta, pero la puntuación se calcula con 512 tokens.
 - **Versionado.** Si cambia el formato de la respuesta, hay que actualizar este documento y el backend a la vez. Si solo cambia el modelo, se cambia `model_version`.
