@@ -1,6 +1,6 @@
-fastapi
-uvicorn[standard]
-pydantic
-transformers
-torch
-detoxify
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+transformers==5.18.0
+torch==2.14.1
+detoxify==0.5.2

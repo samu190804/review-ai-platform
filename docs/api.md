@@ -95,7 +95,7 @@ Pueden aparecer varios a la vez. Los textos son estables: el backend puede mostr
 | Detoxify `threat` | `amenaza` |
 | Detoxify `sexual_explicit` | `contenido sexual explícito` |
 
-Un motivo de Detoxify aparece cuando el score de su categoría es mayor o igual que el umbral configurable `TOXIC_THRESHOLD` (por defecto 0.7).
+Un motivo de Detoxify aparece cuando el score de su categoría es mayor o igual que el umbral configurable `TOXIC_THRESHOLD` (por defecto 0.65).
 
 ### Errores
 
