@@ -102,10 +102,11 @@ Un motivo de Detoxify aparece cuando el score de su categoría es mayor o igual 
 | Código | Cuándo | Cuerpo |
 |---|---|---|
 | 422 | El cuerpo no cumple las restricciones: falta `text`, tipo incorrecto, o longitud fuera de 10 a 2000 caracteres | Detalle de validación de FastAPI |
-| 503 | Los modelos no están cargados o el servicio no está listo | `{ "detail": "mensaje" }` |
-| 500 | Error interno inesperado | `{ "detail": "mensaje" }` |
+| 500 | Error interno inesperado | `{ "detail": "Error interno del servicio de IA" }` |
 
-El backend debe tratar 422 como un error de validación de su lado, y 503 o 500 como un fallo temporal del servicio de IA. En ese caso la reseña queda en `PENDING`.
+Los modelos se cargan al arrancar el servicio. Si la carga falla, el servicio no arranca y no hay nadie que responda, así que no existe un 503.
+
+El backend debe tratar 422 como un error de validación de su lado. Debe tratar 500, un rechazo de conexión o un timeout como un fallo temporal del servicio de IA. En ese caso la reseña queda en `PENDING`.
 
 ## GET /health
 
