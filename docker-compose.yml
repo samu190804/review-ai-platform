@@ -10,3 +10,24 @@ services:
       TOXIC_THRESHOLD: ${TOXIC_THRESHOLD:-0.65}
       MIN_LENGTH: ${MIN_LENGTH:-10}
     restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    container_name: review-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: reviews
+      POSTGRES_USER: ${DB_USER:?Define DB_USER en .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d reviews"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
