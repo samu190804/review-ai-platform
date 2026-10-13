@@ -47,6 +47,10 @@ public class Review {
 	@JdbcTypeCode(SqlTypes.JSON)
 	private Map<String, Double> moderationScores;
 
+	/** Intentos de análisis que han fallado por un problema temporal del ai-service. */
+	@Column(nullable = false)
+	private int analysisAttempts;
+
 	@CreationTimestamp
 	@Column(nullable = false, updatable = false)
 	private Instant createdAt;
@@ -113,6 +117,14 @@ public class Review {
 
 	public void setModerationScores(Map<String, Double> moderationScores) {
 		this.moderationScores = moderationScores;
+	}
+
+	public int getAnalysisAttempts() {
+		return analysisAttempts;
+	}
+
+	public void registerFailedAttempt() {
+		analysisAttempts++;
 	}
 
 	public Instant getCreatedAt() {
