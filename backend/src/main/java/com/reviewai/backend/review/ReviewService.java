@@ -1,12 +1,16 @@
 package com.reviewai.backend.review;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.reviewai.backend.ai.AiAnalysisResponse;
+import com.reviewai.backend.ai.AiRequestRejectedException;
 import com.reviewai.backend.ai.AiServiceClient;
 import com.reviewai.backend.ai.AiServiceUnavailableException;
 
@@ -40,8 +44,46 @@ public class ReviewService {
 		}
 		catch (AiServiceUnavailableException e) {
 			log.warn("ai-service no disponible; la reseña queda PENDING: {}", e.getMessage());
+			review.registerFailedAttempt();
 		}
 		return repository.save(review);
+	}
+
+	/**
+	 * Reintenta el análisis de las reseñas PENDING (lo llama el job programado).
+	 * Devuelve cuántas se resolvieron.
+	 *
+	 * - Fallo temporal: se anota el intento y se corta el lote. Si el ai-service
+	 *   está caído, llamarlo para las demás solo gastaría sus intentos.
+	 * - Rechazo (422): sería un bug nuestro; esa reseña no se arreglará sola, así que
+	 *   se anota el intento (acabará agotándose) y se sigue con las demás.
+	 * Tampoco es @Transactional, por la misma razón que create().
+	 */
+	public int retryPending(int batchSize, int maxAttempts) {
+		List<Review> batch = repository.findRetryable(ReviewStatus.PENDING, maxAttempts, PageRequest.of(0, batchSize));
+		int resolved = 0;
+
+		for (Review review : batch) {
+			try {
+				applyAnalysis(review, aiClient.analyze(review.getText()));
+				repository.save(review);
+				resolved++;
+			}
+			catch (AiServiceUnavailableException e) {
+				review.registerFailedAttempt();
+				repository.save(review);
+				log.warn("Reintento fallido de la reseña {} (intento {}); se corta el lote: {}",
+						review.getId(), review.getAnalysisAttempts(), e.getMessage());
+				break;
+			}
+			catch (AiRequestRejectedException e) {
+				review.registerFailedAttempt();
+				repository.save(review);
+				log.error("El ai-service rechazó la reseña {} (intento {}): {}",
+						review.getId(), review.getAnalysisAttempts(), e.getMessage());
+			}
+		}
+		return resolved;
 	}
 
 	/**
