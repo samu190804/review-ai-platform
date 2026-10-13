@@ -3,7 +3,9 @@ package com.reviewai.backend.review;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +14,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Pageable;
 
 import com.reviewai.backend.ai.AiAnalysisResponse;
 import com.reviewai.backend.ai.AiAnalysisResponse.Moderation;
@@ -77,7 +80,58 @@ class ReviewServiceTests {
 		assertThat(review.getStatus()).isEqualTo(ReviewStatus.PENDING);
 		assertThat(review.getStars()).isNull();
 		assertThat(review.getModerationReasons()).isNull();
+		assertThat(review.getAnalysisAttempts()).isEqualTo(1);
 		verify(repository).save(review);
+	}
+
+	@Test
+	void retryResolvesPendingReviews() {
+		Review pending = new Review(TEXT);
+		when(repository.findRetryable(eq(ReviewStatus.PENDING), eq(5), any(Pageable.class)))
+				.thenReturn(List.of(pending));
+		when(aiClient.analyze(TEXT)).thenReturn(new AiAnalysisResponse(
+				new Moderation(false, List.of(), Map.of()), new Rating(4, 0.8), "nlptown-bert-v1"));
+
+		int resolved = service.retryPending(20, 5);
+
+		assertThat(resolved).isEqualTo(1);
+		assertThat(pending.getStatus()).isEqualTo(ReviewStatus.APPROVED);
+		assertThat(pending.getStars()).isEqualTo((short) 4);
+		verify(repository).save(pending);
+	}
+
+	@Test
+	void retryStopsTheBatchAtFirstTemporaryFailure() {
+		Review first = new Review("Primera reseña pendiente de análisis.");
+		Review second = new Review("Segunda reseña pendiente de análisis.");
+		when(repository.findRetryable(eq(ReviewStatus.PENDING), eq(5), any(Pageable.class)))
+				.thenReturn(List.of(first, second));
+		when(aiClient.analyze(any())).thenThrow(new AiServiceUnavailableException("caído", null));
+
+		int resolved = service.retryPending(20, 5);
+
+		assertThat(resolved).isZero();
+		assertThat(first.getAnalysisAttempts()).isEqualTo(1);
+		assertThat(second.getAnalysisAttempts()).isZero();
+		verify(aiClient, times(1)).analyze(any());
+	}
+
+	@Test
+	void retryCountsRejectionAndContinuesWithTheRest() {
+		Review rejected = new Review("Reseña que el ai-service rechaza siempre.");
+		Review fine = new Review("Reseña correcta que sí se puede analizar.");
+		when(repository.findRetryable(eq(ReviewStatus.PENDING), eq(5), any(Pageable.class)))
+				.thenReturn(List.of(rejected, fine));
+		when(aiClient.analyze(rejected.getText())).thenThrow(new AiRequestRejectedException("422"));
+		when(aiClient.analyze(fine.getText())).thenReturn(new AiAnalysisResponse(
+				new Moderation(false, List.of(), Map.of()), new Rating(5, 0.9), "nlptown-bert-v1"));
+
+		int resolved = service.retryPending(20, 5);
+
+		assertThat(resolved).isEqualTo(1);
+		assertThat(rejected.getAnalysisAttempts()).isEqualTo(1);
+		assertThat(rejected.getStatus()).isEqualTo(ReviewStatus.PENDING);
+		assertThat(fine.getStatus()).isEqualTo(ReviewStatus.APPROVED);
 	}
 
 	@Test

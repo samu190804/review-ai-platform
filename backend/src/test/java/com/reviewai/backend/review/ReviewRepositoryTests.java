@@ -53,6 +53,26 @@ class ReviewRepositoryTests {
 	}
 
 	@Test
+	void findRetryableSkipsExhaustedReviewsAndOrdersByFewestAttempts() {
+		Review exhausted = new Review("Reseña que ya agotó sus intentos de análisis.");
+		Review oneFailure = new Review("Reseña con un intento fallido de análisis.");
+		Review fresh = new Review("Reseña pendiente sin ningún intento fallido.");
+		Review approved = new Review("Reseña que ya está aprobada del todo.");
+		approved.setStatus(ReviewStatus.APPROVED);
+		for (int i = 0; i < 3; i++) {
+			exhausted.registerFailedAttempt();
+		}
+		oneFailure.registerFailedAttempt();
+		repository.saveAll(List.of(exhausted, oneFailure, fresh, approved));
+		repository.flush();
+
+		var retryable = repository.findRetryable(ReviewStatus.PENDING, 3, PageRequest.of(0, 10));
+
+		assertThat(retryable).extracting(Review::getText)
+				.containsExactly(fresh.getText(), oneFailure.getText());
+	}
+
+	@Test
 	void findsReviewsByStatus() {
 		Review rejected = new Review("Esto es un insulto de ejemplo largo.");
 		rejected.setStatus(ReviewStatus.REJECTED);
