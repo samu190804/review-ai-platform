@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "review-postgres",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "reviews",
+      "Username": "reviews_user",
+      "SSLMode": "prefer"
+    }
+  }
+}

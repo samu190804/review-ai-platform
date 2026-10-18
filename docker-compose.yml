@@ -29,5 +29,29 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # Interfaz web para ver y gestionar la base de datos. Solo para desarrollo:
+  # no arranca con un "up" normal, hay que pedirlo con --profile tools.
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: review-pgadmin
+    profiles: ["tools"]
+    ports:
+      - "127.0.0.1:5050:80"
+    environment:
+      # Obligatorios para que la imagen arranque; en modo escritorio no se piden al entrar.
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+      # Modo escritorio: sin pantalla de login. Seguro porque solo escucha en 127.0.0.1.
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      - ./docker/pgadmin-servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   postgres-data:
+  pgadmin-data:
