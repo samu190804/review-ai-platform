@@ -21,4 +21,11 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('header a')?.textContent).toContain('Review AI');
   });
+
+  it('enlaza a las pantallas Analizar e Historial', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const links = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('nav a'));
+    expect(links.map((a) => a.getAttribute('href'))).toEqual(['/analizar', '/historial']);
+  });
 });
