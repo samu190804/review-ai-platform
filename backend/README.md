@@ -88,6 +88,22 @@ Ver el contenido de la base de datos:
 docker exec review-postgres psql -U reviews_user -d reviews -c "select id, status, stars, analysis_attempts from reviews order by id"
 ```
 
+### pgAdmin (interfaz web)
+
+Para ver y editar los datos con una interfaz gráfica hay un contenedor de pgAdmin, opcional. Desde la raíz del repo:
+
+```powershell
+docker compose --profile tools up -d pgadmin
+```
+
+- Abrir http://localhost:5050. No pide login: solo escucha en `127.0.0.1`.
+- El servidor `review-postgres` ya aparece registrado (definido en `docker/pgadmin-servers.json`). Al abrirlo pide la contraseña: es `DB_PASSWORD` del `.env`.
+- Las tablas están en Servers → review-postgres → Databases → reviews → Schemas → public → Tables.
+- Dentro de pgAdmin el host de Postgres es `postgres`, no `localhost`: pgAdmin corre en su propio contenedor y los contenedores se ven por el nombre del servicio. `localhost:5432` es para programas fuera de Docker, como el backend.
+- Apagar: `docker compose stop pgadmin`. Su configuración se guarda en el volumen `pgadmin-data`.
+
+Usarlo para ver y corregir datos, pero no para cambiar el esquema: eso se hace con migraciones de Flyway. Y `flyway_schema_history` no se toca.
+
 ## Tests
 
 ```powershell
