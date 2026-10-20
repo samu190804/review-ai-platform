@@ -1,0 +1,23 @@
+<h1 class="text-2xl font-semibold">Historial</h1>
+<p class="mt-1 text-slate-600">Las reseñas analizadas, de la más reciente a la más antigua.</p>
+
+<div class="mt-6" aria-live="polite">
+  @if (loading()) {
+    <p class="text-slate-500">Cargando reseñas…</p>
+  } @else if (error(); as message) {
+    <div role="alert" class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+      <p class="font-medium">No se pudo cargar el historial</p>
+      <p class="mt-1 text-sm">{{ message }}</p>
+    </div>
+  } @else if (items().length === 0) {
+    <p class="rounded-lg border border-dashed border-slate-300 p-6 text-center text-slate-500">
+      Todavía no hay reseñas. Analiza la primera desde la pantalla "Analizar".
+    </p>
+  } @else {
+    <ul class="space-y-4">
+      @for (review of items(); track review.id) {
+        <li><app-review-result [review]="review" /></li>
+      }
+    </ul>
+  }
+</div>
