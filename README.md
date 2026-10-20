@@ -6,7 +6,7 @@ Es un proyecto de portfolio, organizado como monorepo.
 
 ## Estado
 
-En desarrollo. Fases 0 a 2 completadas (el backend funciona y tiene tests; Spring Security se añadirá al final). Fase actual: 3 (frontend Angular). Ver el plan más abajo.
+En desarrollo. Fases 0 a 3 completadas: el backend y el frontend funcionan y tienen tests (Spring Security se añadirá al final). Fase actual: 4 (evaluación del modelo). Ver el plan más abajo.
 
 ## Arquitectura
 
@@ -24,10 +24,10 @@ Frontend (Angular)  -->  Backend (Spring Boot + PostgreSQL)  -->  AI service (Fa
 |---|---|
 | `ai-service/` | Microservicio de IA en Python con FastAPI |
 | `backend/` | API REST en Spring Boot con PostgreSQL y validación (la seguridad llegará al final) |
-| `frontend/` | Aplicación Angular |
+| `frontend/` | Aplicación Angular con Tailwind: analizar una reseña e historial con filtro y paginación |
 | `evaluation/` | Notebooks y scripts para medir la calidad del modelo |
 | `docs/api.md` | Contrato JSON entre `ai-service` y `backend` (fuente de verdad) |
-| `docs/backend-api.md` | API REST del backend, la que usará el frontend |
+| `docs/backend-api.md` | API REST del backend, la que usa el frontend |
 
 ## Decisiones de diseño
 
@@ -81,7 +81,20 @@ La primera vez tarda, porque descarga los modelos. Después, el backend desde `b
 - AI service: http://localhost:8000 (`/health`)
 - Backend: http://localhost:8080 (`/actuator/health`, `/api/reviews`)
 
-El frontend todavía no existe.
+Por último, el frontend desde `frontend/` (más detalles en su [README](frontend/README.md)):
+
+```powershell
+npm install   # solo la primera vez
+npm start
+```
+
+- Frontend: http://localhost:4200. Reenvía `/api` al backend con un proxy de desarrollo.
+
+Opcional, para ver y editar la base de datos con una interfaz web (pgAdmin en http://localhost:5050):
+
+```powershell
+docker compose --profile tools up -d pgadmin
+```
 
 ## Ideas pendientes
 
@@ -89,6 +102,8 @@ El frontend todavía no existe.
 - Decidir qué muestra la vista pública. Hoy el listado devuelve también las reseñas rechazadas, con su texto.
 - Reintento manual de una reseña `PENDING` que agotó sus intentos.
 - Spring Security, al final.
+- Frontend: tras enviar una reseña que queda `PENDING`, enlazar al historial filtrado por "Pendientes" (para eso el filtro tendría que leerse de la URL). Hoy el historial no se actualiza solo: hay que pulsar "Actualizar".
+- Frontend: un texto de solo emojis puede pasar el mínimo de 10 caracteres en JavaScript (UTF-16) y no en Python, y acabar en un 502.
 - El límite de 2000 caracteres se cuenta distinto en Java (UTF-16) y en Python (caracteres): un texto con emojis justo en el límite podría dar un 502.
 
 ## Configuración y secretos

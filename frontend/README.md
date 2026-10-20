@@ -1,59 +1,65 @@
-# Frontend
+# frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.1.5.
+Aplicación web de la plataforma (Angular 22 + Tailwind CSS 4). Escucha en http://localhost:4200 y solo habla con el backend.
 
-## Development server
+Tiene dos pantallas:
 
-To start a local development server, run:
+- **Analizar** (`/analizar`): se escribe el texto de una reseña y se muestra su resultado.
+- **Historial** (`/historial`): reseñas ya analizadas, con filtro por estado y paginación.
 
-```bash
-ng serve
+La API que consume está en [../docs/backend-api.md](../docs/backend-api.md).
+
+## Encender
+
+Requisitos: Node.js y el backend encendido en http://localhost:8080 (ver su [README](../backend/README.md)). El `ai-service` es opcional: sin él las reseñas nuevas quedan `PENDING`.
+
+Desde `frontend/`:
+
+```powershell
+npm install   # solo la primera vez
+npm start
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+| Comando | Qué hace |
+|---|---|
+| `npm start` | Servidor de desarrollo con recarga y proxy a la API |
+| `npx ng test --watch=false` | Ejecuta los tests una vez |
+| `npm run build` | Compila para producción en `dist/` |
 
-## Code scaffolding
+## Proxy a la API
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+El código llama a rutas relativas (`/api/reviews`). En desarrollo, `ng serve` reenvía `/api` a `http://localhost:8080` ([proxy.conf.json](proxy.conf.json)), así que no hace falta CORS en Spring. El proxy no existe en una compilación de producción: allí tendrá que haber un servidor delante que reenvíe `/api` (fase 5, con Docker Compose).
 
-```bash
-ng generate component component-name
+## Estructura
+
+```
+src/app/
+  pages/analyze/   Pantalla Analizar
+  pages/history/   Pantalla Historial
+  reviews/         Modelos, ReviewService (único sitio que conoce las URLs),
+                   api-error.ts (errores HTTP a mensajes) y el componente ReviewResult
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Sin librería de UI ni gestor de estado: Tailwind en las plantillas y servicios con *signals*.
 
-```bash
-ng generate --help
-```
+## Estados de una reseña
 
-## Building
+`ReviewResult` enseña solo lo que cada estado tiene:
 
-To build the project run:
+| Estado | Qué se muestra |
+|---|---|
+| `APPROVED` | Estrellas y confianza |
+| `REJECTED` | Motivos de moderación, sin estrellas |
+| `PENDING` | Aviso de que se reintentará solo |
 
-```bash
-ng build
-```
+`PENDING` no es un error: el backend responde 201 y la reseña ya está guardada. Cuando se resuelve, en el historial hay que pulsar **Actualizar** para verla cambiar.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Tests
 
-## Running unit tests
+No necesitan backend ni Docker: las peticiones se interceptan con `HttpTestingController`. Hay uno por cada pieza (servicio, errores, `ReviewResult`, las dos pantallas y la cabecera).
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Cosas que conviene saber
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- **Si un cambio no aparece en el navegador,** reinicia `npm start` antes de sospechar del código: el servidor de desarrollo puede quedarse con una compilación antigua.
+- **El texto se valida sin espacios en los extremos,** y eso es lo que se envía. Un texto de hasta 2000 en pantalla no supera el límite del backend ni el del `ai-service`. El caso contrario no está cubierto: un texto de solo emojis puede pasar el mínimo de 10 en JavaScript y quedarse por debajo en Python (ver "Ideas pendientes" del README raíz).
+- **Cambiar de filtro cancela la petición anterior,** para que una respuesta lenta no pise a la nueva.
