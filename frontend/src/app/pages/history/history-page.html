@@ -1,6 +1,24 @@
 <h1 class="text-2xl font-semibold">Historial</h1>
 <p class="mt-1 text-slate-600">Las reseñas analizadas, de la más reciente a la más antigua.</p>
 
+<div class="mt-6 flex flex-wrap gap-2" role="group" aria-label="Filtrar por estado">
+  @for (filter of filters; track filter.label) {
+    <button
+      type="button"
+      class="rounded-full border px-4 py-1.5 text-sm font-medium"
+      [class]="
+        status() === filter.value
+          ? 'border-indigo-600 bg-indigo-600 text-white'
+          : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+      "
+      [attr.aria-pressed]="status() === filter.value"
+      (click)="selectStatus(filter.value)"
+    >
+      {{ filter.label }}
+    </button>
+  }
+</div>
+
 <div class="mt-6" aria-live="polite">
   @if (loading()) {
     <p class="text-slate-500">Cargando reseñas…</p>
@@ -11,7 +29,11 @@
     </div>
   } @else if (items().length === 0) {
     <p class="rounded-lg border border-dashed border-slate-300 p-6 text-center text-slate-500">
-      Todavía no hay reseñas. Analiza la primera desde la pantalla "Analizar".
+      @if (status() === null) {
+        Todavía no hay reseñas. Analiza la primera desde la pantalla "Analizar".
+      } @else {
+        No hay reseñas con este estado.
+      }
     </p>
   } @else {
     <ul class="space-y-4">
@@ -21,3 +43,30 @@
     </ul>
   }
 </div>
+
+@if (data(); as current) {
+  @if (current.totalPages > 1) {
+    <nav class="mt-6 flex items-center justify-between gap-3" aria-label="Paginación">
+      <button
+        type="button"
+        class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="loading() || current.page === 0"
+        (click)="goTo(current.page - 1)"
+      >
+        Anterior
+      </button>
+      <p class="text-sm text-slate-600">
+        Página {{ current.page + 1 }} de {{ current.totalPages }}
+        <span class="text-slate-400">· {{ current.totalElements }} reseñas</span>
+      </p>
+      <button
+        type="button"
+        class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="loading() || current.page >= current.totalPages - 1"
+        (click)="goTo(current.page + 1)"
+      >
+        Siguiente
+      </button>
+    </nav>
+  }
+}
