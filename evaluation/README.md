@@ -35,15 +35,14 @@ El archivo se guarda en UTF-8 con BOM. Para leerlo con pandas hay que usar `enco
 
 ## Cómo ejecutarlo
 
-Desde la raíz del repositorio, con un entorno virtual propio:
+Desde la raíz del repositorio, con el mismo entorno de conda que usa `ai-service` (Python 3.12):
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate          # Windows
+conda activate review-ai
 pip install -r evaluation/requirements.txt
 ```
 
-Las dependencias incluyen las de `ai-service`, de modo que el notebook importa `app.rating` y `app.moderation` y evalúa exactamente el código que corre en producción. La primera vez se descargan los modelos desde Hugging Face.
+Las dependencias incluyen las de `ai-service`, de modo que el notebook importa `app.rating` y `app.moderation` y evalúa exactamente el código que corre en producción, con las mismas versiones. La primera vez se descargan los modelos desde Hugging Face.
 
 ## Métricas
 
