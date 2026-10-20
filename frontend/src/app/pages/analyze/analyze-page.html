@@ -1,0 +1,63 @@
+<h1 class="text-2xl font-semibold">Analizar una reseña</h1>
+<p class="mt-1 text-slate-600">
+  Pega el texto de una reseña. Se modera y, si es aceptable, recibe una puntuación de 1 a 5 estrellas.
+</p>
+
+<form class="mt-6" (submit)="$event.preventDefault(); submit()">
+  <label for="review-text" class="block text-sm font-medium text-slate-700">Texto de la reseña</label>
+  <textarea
+    id="review-text"
+    rows="6"
+    class="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-3 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-slate-100"
+    placeholder="La comida estaba fría y tardaron una hora."
+    [value]="text()"
+    [disabled]="sending()"
+    [attr.aria-invalid]="tooShort() || tooLong()"
+    aria-describedby="review-hint"
+    (input)="onInput($event)"
+  ></textarea>
+
+  <div id="review-hint" class="mt-1 flex justify-between text-sm">
+    @if (tooShort()) {
+      <span class="text-red-600">Escribe al menos {{ min }} caracteres.</span>
+    } @else if (tooLong()) {
+      <span class="text-red-600">El máximo es de {{ max }} caracteres.</span>
+    } @else {
+      <span class="text-slate-500">Entre {{ min }} y {{ max }} caracteres.</span>
+    }
+    <span [class]="tooLong() ? 'text-red-600' : 'text-slate-500'">{{ length() }} / {{ max }}</span>
+  </div>
+
+  <div class="mt-4 flex gap-3">
+    <button
+      type="submit"
+      class="rounded-lg bg-indigo-600 px-5 py-2 font-medium text-white shadow-sm hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+      [disabled]="!canSubmit()"
+    >
+      {{ sending() ? 'Analizando…' : 'Analizar' }}
+    </button>
+    @if (text().length > 0 && !sending()) {
+      <button
+        type="button"
+        class="rounded-lg border border-slate-300 bg-white px-5 py-2 font-medium text-slate-700 hover:bg-slate-50"
+        (click)="reset()"
+      >
+        Limpiar
+      </button>
+    }
+  </div>
+</form>
+
+<div class="mt-8" aria-live="polite">
+  @if (error(); as message) {
+    <div role="alert" class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">
+      <p class="font-medium">No se pudo analizar la reseña</p>
+      <p class="mt-1 text-sm">{{ message }}</p>
+    </div>
+  }
+
+  @if (result(); as review) {
+    <h2 class="mb-3 text-lg font-semibold">Resultado</h2>
+    <app-review-result [review]="review" />
+  }
+</div>
