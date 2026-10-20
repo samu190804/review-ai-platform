@@ -57,6 +57,11 @@ export class HistoryPage implements OnInit, OnDestroy {
     this.load();
   }
 
+  /** Repite la última consulta (mismo filtro y misma página): para reintentar tras un error o para actualizar. */
+  protected reload(): void {
+    this.load();
+  }
+
   private load(): void {
     // Si el usuario cambia de filtro mientras hay una petición en vuelo, se descarta la anterior
     // para que una respuesta lenta no pise a la nueva.

@@ -80,6 +80,45 @@ describe('HistoryPage', () => {
     expect(el.querySelector('[role="alert"]')?.textContent).toContain('Algo falló');
   });
 
+  it('"Reintentar" repite la consulta con el mismo filtro y recupera la lista', async () => {
+    await answer(pageOf([]));
+    buttonByText('Rechazadas').click();
+    await fixture.whenStable();
+    expectList().flush({ detail: 'Algo falló' }, { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+    expect(el.querySelector('[role="alert"]')).not.toBeNull();
+
+    buttonByText('Reintentar').click();
+    await fixture.whenStable();
+    const req = expectList();
+    expect(req.request.params.get('status')).toBe('REJECTED');
+    req.flush(pageOf([review(7, 'Reseña recuperada tras el error')]));
+    await fixture.whenStable();
+
+    expect(el.querySelector('[role="alert"]')).toBeNull();
+    expect(el.textContent).toContain('Reseña recuperada tras el error');
+  });
+
+  it('"Actualizar" repite la consulta con el filtro y la página actuales', async () => {
+    await answer(pageOf([review(1, 'Una reseña cualquiera')], 0, 3, 25));
+    buttonByText('Siguiente').click();
+    await fixture.whenStable();
+    await answer(pageOf([review(2, 'Otra reseña cualquiera')], 1, 3, 25));
+
+    buttonByText('Actualizar').click();
+    await fixture.whenStable();
+
+    const req = expectList();
+    expect(req.request.params.get('page')).toBe('1');
+    req.flush(pageOf([review(2, 'Otra reseña cualquiera')], 1, 3, 25));
+  });
+
+  it('"Actualizar" se bloquea mientras carga', async () => {
+    expect(buttonByText('Actualizar').disabled).toBe(true);
+    await answer(pageOf([]));
+    expect(buttonByText('Actualizar').disabled).toBe(false);
+  });
+
   describe('filtro por estado', () => {
     it('al elegir un estado vuelve a pedir la lista con ese estado', async () => {
       await answer(pageOf([review(1, 'Una reseña cualquiera')]));
