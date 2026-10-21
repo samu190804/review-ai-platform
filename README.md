@@ -6,7 +6,7 @@ Es un proyecto de portfolio, organizado como monorepo.
 
 ## Estado
 
-En desarrollo. Fases 0 a 3 completadas: el backend y el frontend funcionan y tienen tests (Spring Security se añadirá al final). Fase actual: 4 (evaluación del modelo). Ver el plan más abajo.
+En desarrollo. Fases 0 a 3 completadas: el backend y el frontend funcionan y tienen tests (Spring Security se añadirá al final). La evaluación de los modelos (fase 4) está hecha, con sus resultados en [evaluation/](evaluation/README.md). Ver el plan más abajo.
 
 ## Arquitectura
 
@@ -25,15 +25,15 @@ Frontend (Angular)  -->  Backend (Spring Boot + PostgreSQL)  -->  AI service (Fa
 | `ai-service/` | Microservicio de IA en Python con FastAPI |
 | `backend/` | API REST en Spring Boot con PostgreSQL y validación (la seguridad llegará al final) |
 | `frontend/` | Aplicación Angular con Tailwind: analizar una reseña e historial con filtro y paginación |
-| `evaluation/` | Notebooks y scripts para medir la calidad del modelo |
+| `evaluation/` | Dataset etiquetado a mano y notebook que mide la calidad de los modelos ([README](evaluation/README.md)) |
 | `docs/api.md` | Contrato JSON entre `ai-service` y `backend` (fuente de verdad) |
 | `docs/backend-api.md` | API REST del backend, la que usa el frontend |
 
 ## Decisiones de diseño
 
 - **Todo en local.** No se usan APIs de pago ni servicios en la nube.
-- **Puntuación.** Modelo `nlptown/bert-base-multilingual-uncased-sentiment`, que clasifica de 1 a 5 estrellas y admite varios idiomas. Se carga una sola vez al importar el módulo, para no pagar el coste de carga en cada petición.
-- **Moderación híbrida.** Reglas simples (longitud mínima, enlaces, spam) combinadas con Detoxify multilingual, con un umbral de toxicidad configurable. Las reglas son rápidas y explicables; el modelo cubre lo que las reglas no detectan.
+- **Puntuación.** Modelo preentrenado `nlptown/bert-base-multilingual-uncased-sentiment`: un BERT multilingüe ajustado para clasificar reseñas de 1 a 5 estrellas, que admite varios idiomas, entre ellos el español. Se usa tal cual, sin reentrenar. Se carga una sola vez al importar el módulo, para no pagar el coste de carga en cada petición.
+- **Moderación híbrida.** Reglas simples (longitud mínima, enlaces, spam) combinadas con Detoxify `multilingual`, un modelo XLM-RoBERTa (familia BERT/RoBERTa) preentrenado para detectar toxicidad en varios idiomas, con un umbral de toxicidad configurable (0.90 por defecto, elegido en la evaluación). Las reglas son rápidas y explicables; el modelo cubre lo que las reglas no detectan.
 - **Reseña marcada, sin puntuación.** Si la moderación marca una reseña, `rating` devuelve `null` y no se ejecuta el modelo de estrellas. Así se evita gastar cómputo en texto que no se va a publicar.
 - **Estados de reseña.** Los gestiona Spring: `PENDING` pasa a `APPROVED` o `REJECTED`.
 - **Las reseñas rechazadas se guardan.** Sirven para auditar la moderación y, en la fase 4, para medir el modelo y elegir el umbral.
@@ -50,6 +50,15 @@ Frontend (Angular)  -->  Backend (Spring Boot + PostgreSQL)  -->  AI service (Fa
 3. Frontend Angular
 4. Evaluación del modelo: MAE, accuracy y matriz de confusión. El umbral de toxicidad se elige con un CSV propio de reseñas etiquetadas.
 5. Panel de análisis, tests, Docker Compose, CI y despliegue
+
+## Evaluación de los modelos
+
+Se midieron los dos modelos con 200 reseñas en español etiquetadas a mano. El detalle, con el código y las gráficas, está en [evaluation/](evaluation/README.md).
+
+- **Puntuación.** El 63.6 % de las reseñas recibe la puntuación exacta y el 96.5 % se queda a una estrella como máximo (error medio de 0.42 estrellas). Va bien en 1★ y 5★ y peor en las intermedias.
+- **Moderación.** Con el umbral de toxicidad en 0.90, precision 0.93 y recall 0.80. El umbral se subió desde 0.65 para no bloquear reseñas legítimas. El punto débil son las amenazas, que Detoxify casi no detecta en español.
+
+Son resultados con un dataset pequeño, redactado y etiquetado por una sola persona; las limitaciones están explicadas en el README de `evaluation/`.
 
 ## Contrato de la API de IA
 
