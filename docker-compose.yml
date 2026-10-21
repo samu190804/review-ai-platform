@@ -7,7 +7,7 @@ services:
       - "8000:8000"
     environment:
       MODELNAME: ${MODELNAME:-nlptown-bert-v1}
-      TOXIC_THRESHOLD: ${TOXIC_THRESHOLD:-0.65}
+      TOXIC_THRESHOLD: ${TOXIC_THRESHOLD:-0.90}
       MIN_LENGTH: ${MIN_LENGTH:-10}
     restart: unless-stopped
 
