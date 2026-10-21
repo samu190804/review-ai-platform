@@ -31,6 +31,22 @@ evaluation/
 
 Las reseñas se redactaron para cubrir casos distintos: opiniones normales de las cinco puntuaciones, críticas muy duras pero legítimas (para medir falsos positivos) e insultos, amenazas, contenido sexual, enlaces y spam. Las etiquetas las puso una sola persona, sin ejecutar antes los modelos, para no sesgarlas.
 
+### Criterio de etiquetado de `flagged`
+
+`flagged` responde a "¿la política de moderación bloquearía esta reseña?", no a "¿esta persona parece sincera?". Se etiqueta con la norma, no con la lectura individual de cada caso.
+
+Se bloquea (`1`):
+- Insultos o faltas de respeto a personas, aunque sean suaves.
+- Amenazas.
+- Contenido sexual explícito dirigido a alguien o gratuito.
+- Enlaces.
+- Spam: repeticiones exageradas de letras ("buenooooooo", aunque la intención sea sincera), símbolos repetidos o mensajes que son solo risas ("jajajajaja").
+
+No se bloquea (`0`):
+- La crítica dura, aunque sea desagradable ("pésimo servicio, una vergüenza").
+- Describir hechos desagradables, incluido el acoso sufrido o el contenido sexual de una película, cuando la reseña los cuenta y no los ejerce.
+- Risas dentro de una reseña con contenido real ("jajaja esto es lo máximo").
+
 El archivo se guarda en UTF-8 con BOM. Para leerlo con pandas hay que usar `encoding="utf-8-sig"`.
 
 ## Cómo ejecutarlo

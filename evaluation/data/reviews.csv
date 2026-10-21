@@ -23,7 +23,7 @@
 22,"La peor compra del año, la cafetera pierde agua por todas partes.",2,0
 23,La cafetera hace buen café pero es ruidosa y se calienta demasiado.,4,0
 24,"La gerencia no tiene ni idea de atender al público, qué desastre de gestión.",1,0
-25,Buenooooooooo muy buenooooooooo me encantaaaaaaaa lo recomiendooooooo,5,0
+25,Buenooooooooo muy buenooooooooo me encantaaaaaaaa lo recomiendooooooo,5,1
 26,Como no me devuelvan el dinero voy a ir con mis amigos y os vamos a destrozar el local.,,1
 27,"El postre estaba bueno, el resto de la cena bastante decepcionante.",4,0
 28,"Un trato exquisito, me sentí como en casa. Volveré encantado.",5,0
@@ -158,7 +158,7 @@
 157,"No está del todo mal, pero esperaba bastante más por lo que cuesta.",3,0
 158,"Increíble, superó todas mis expectativas. Lo recomiendo al cien por cien.",5,0
 159,"Mal servicio, denuncio en https://quejas-consumo.example/caso123 y adjunto pruebas.",,1
-160,Qué rico qué ricooooooooooooo sin palabras ricooooooooooooo,5,0
+160,Qué rico qué ricooooooooooooo sin palabras ricooooooooooooo,5,1
 161,"Buen concierto y buen ambiente, la entrada mereció la pena.",5,0
 162,"Compré aquí y fue perfecto, y si quieres ganar dinero visita www.ganadinerorapido.example hoy.",,1
 163,El curso tiene algo de contenido interesante pero está mal explicado.,4,0
@@ -185,7 +185,7 @@
 184,Me cobraron dos veces y para recuperar el dinero tuve que reclamar durante un mes.,3,0
 185,"El peor restaurante al que he ido, la carne estaba cruda por dentro.",1,0
 186,"El mejor curso que he hecho, aprendí muchísimo y el profesor es genial.",5,0
-187,"Qué camarero tan estúpido, no entiende nada y encima se burla del cliente.",2,0
+187,"Qué camarero tan estúpido, no entiende nada y encima se burla del cliente.",,1
 188,"Llegué con reserva y me dijeron que no había mesa, ni una explicación decente.",2,0
 189,Es una burla que llamen cuatro estrellas a este antro.,3,0
 190,El masajista me hizo proposiciones sexuales muy explícitas durante la sesión.,1,0
