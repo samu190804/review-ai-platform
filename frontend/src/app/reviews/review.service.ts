@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CreateReviewRequest, PageResponse, Review, ReviewStatus } from './review.model';
+import { CreateReviewRequest, PageResponse, Review, ReviewStats, ReviewStatus } from './review.model';
 
 /**
  * Único punto de la app que conoce las URLs del backend.
@@ -23,6 +23,10 @@ export class ReviewService {
     if (options.page !== undefined) params = params.set('page', options.page);
     if (options.size !== undefined) params = params.set('size', options.size);
     return this.http.get<PageResponse<Review>>(this.baseUrl, { params });
+  }
+
+  stats(): Observable<ReviewStats> {
+    return this.http.get<ReviewStats>(`${this.baseUrl}/stats`);
   }
 
   get(id: number): Observable<Review> {

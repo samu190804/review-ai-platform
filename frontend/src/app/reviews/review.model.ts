@@ -29,6 +29,16 @@ export interface PageResponse<T> {
   totalPages: number;
 }
 
+/** Respuesta de GET /api/reviews/stats. Siempre trae los tres estados y las cinco puntuaciones. */
+export interface ReviewStats {
+  total: number;
+  byStatus: Record<ReviewStatus, number>;
+  /** Claves "1" a "5". Solo cuentan las reseñas aprobadas. */
+  starsDistribution: Record<string, number>;
+  /** De 0 a 1. null si todavía no hay ninguna reseña aprobada. */
+  averageConfidence: number | null;
+}
+
 export interface CreateReviewRequest {
   text: string;
 }

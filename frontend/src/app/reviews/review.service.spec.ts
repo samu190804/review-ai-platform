@@ -42,6 +42,23 @@ describe('ReviewService', () => {
     expect(result).toEqual(review);
   });
 
+  it('pide las estadísticas con GET /api/reviews/stats', () => {
+    const body = {
+      total: 3,
+      byStatus: { APPROVED: 2, REJECTED: 1, PENDING: 0 },
+      starsDistribution: { '1': 0, '2': 1, '3': 0, '4': 1, '5': 0 },
+      averageConfidence: 0.7,
+    };
+    let result: unknown;
+    service.stats().subscribe((r) => (result = r));
+
+    const req = http.expectOne('/api/reviews/stats');
+    expect(req.request.method).toBe('GET');
+    req.flush(body);
+
+    expect(result).toEqual(body);
+  });
+
   it('lista sin parámetros cuando no se pide nada', () => {
     service.list().subscribe();
 
