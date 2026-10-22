@@ -24,7 +24,7 @@ Frontend (Angular)  -->  Backend (Spring Boot + PostgreSQL)  -->  AI service (Fa
 |---|---|
 | `ai-service/` | Microservicio de IA en Python con FastAPI |
 | `backend/` | API REST en Spring Boot con PostgreSQL y validación (la seguridad llegará al final) |
-| `frontend/` | Aplicación Angular con Tailwind: analizar una reseña e historial con filtro y paginación |
+| `frontend/` | Aplicación Angular con Tailwind: analizar una reseña, historial con filtro y paginación, y estadísticas con gráficas (Chart.js) |
 | `evaluation/` | Dataset etiquetado a mano y notebook que mide la calidad de los modelos ([README](evaluation/README.md)) |
 | `docs/api.md` | Contrato JSON entre `ai-service` y `backend` (fuente de verdad) |
 | `docs/backend-api.md` | API REST del backend, la que usa el frontend |

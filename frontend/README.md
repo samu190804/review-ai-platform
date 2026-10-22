@@ -2,10 +2,11 @@
 
 Aplicación web de la plataforma (Angular 22 + Tailwind CSS 4). Escucha en http://localhost:4200 y solo habla con el backend.
 
-Tiene dos pantallas:
+Tiene tres pantallas:
 
 - **Analizar** (`/analizar`): se escribe el texto de una reseña y se muestra su resultado.
 - **Historial** (`/historial`): reseñas ya analizadas, con filtro por estado y paginación.
+- **Estadísticas** (`/estadisticas`): el total de reseñas, la confianza media del modelo, un anillo con el estado de las reseñas y barras con las puntuaciones de las aprobadas. Cada gráfica trae su texto alternativo y hay una tabla con los mismos datos.
 
 La API que consume está en [../docs/backend-api.md](../docs/backend-api.md).
 
@@ -36,11 +37,13 @@ El código llama a rutas relativas (`/api/reviews`). En desarrollo, `ng serve` r
 src/app/
   pages/analyze/   Pantalla Analizar
   pages/history/   Pantalla Historial
+  pages/stats/     Pantalla Estadísticas: stats-charts.ts (datos y configuración de las gráficas,
+                   funciones puras) y chart-canvas.ts (envuelve Chart.js)
   reviews/         Modelos, ReviewService (único sitio que conoce las URLs),
                    api-error.ts (errores HTTP a mensajes) y el componente ReviewResult
 ```
 
-Sin librería de UI ni gestor de estado: Tailwind en las plantillas y servicios con *signals*.
+Sin librería de UI ni gestor de estado: Tailwind en las plantillas y servicios con *signals*. La única librería añadida es [Chart.js](https://www.chartjs.org/), para las gráficas: solo se registran las piezas que se usan y viaja en el trozo que se carga al abrir Estadísticas, no en el paquete inicial.
 
 ## Estados de una reseña
 
@@ -56,7 +59,7 @@ Sin librería de UI ni gestor de estado: Tailwind en las plantillas y servicios 
 
 ## Tests
 
-No necesitan backend ni Docker: las peticiones se interceptan con `HttpTestingController`. Hay uno por cada pieza (servicio, errores, `ReviewResult`, las dos pantallas y la cabecera).
+No necesitan backend ni Docker: las peticiones se interceptan con `HttpTestingController`. Hay uno por cada pieza (servicio, errores, `ReviewResult`, las tres pantallas y la cabecera). jsdom no tiene canvas, así que los tests de las gráficas no las dibujan: `ChartCanvas` recibe su fábrica por un token (`CHART_FACTORY`), los tests inyectan una falsa y comprueban qué configuración se le pide.
 
 ## Cosas que conviene saber
 
