@@ -128,6 +128,30 @@ Ejemplo: `GET /api/reviews?status=APPROVED&page=0&size=5`
 |---|---|
 | 400 | `status` no es uno de los tres valores |
 
+## GET /api/reviews/stats
+
+Resumen de todas las reseñas guardadas, para el panel de análisis. Los conteos se hacen en la base de datos.
+
+### Respuesta 200
+
+```json
+{
+  "total": 40,
+  "byStatus": { "APPROVED": 31, "REJECTED": 7, "PENDING": 2 },
+  "starsDistribution": { "1": 4, "2": 5, "3": 6, "4": 9, "5": 7 },
+  "averageConfidence": 0.71
+}
+```
+
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `total` | entero | Reseñas guardadas, de cualquier estado |
+| `byStatus` | objeto | Reseñas por estado. Siempre trae los tres, en el orden `APPROVED`, `REJECTED`, `PENDING` |
+| `starsDistribution` | objeto | Reseñas por puntuación, de `"1"` a `"5"`. Siempre trae las cinco. Solo cuentan las aprobadas: las rechazadas y las pendientes no tienen estrellas |
+| `averageConfidence` | número o `null` | Confianza media del modelo, con dos decimales. `null` si todavía no hay ninguna reseña aprobada |
+
+La forma de la respuesta es siempre la misma: los estados y las puntuaciones sin reseñas aparecen con `0`, así que el cliente no tiene que rellenar huecos. Con la base de datos vacía, todo vale `0` y `averageConfidence` es `null`.
+
 ## GET /api/reviews/{id}
 
 Devuelve una reseña ([Objeto reseña](#objeto-reseña)).

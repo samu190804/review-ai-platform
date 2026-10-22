@@ -117,8 +117,8 @@ Necesita Docker abierto: varios tests levantan un PostgreSQL real con Testcontai
 | `ReviewApiIntegrationTests` | La API completa (HTTP, servicio y PostgreSQL real) con un ai-service falso |
 | `AiServiceClientHttpTests` | El cliente HTTP real contra un servidor de verdad: protocolo HTTP/1.1, timeouts, errores |
 | `AiServiceClientTests` | El cliente con respuestas simuladas, siguiendo `docs/api.md` |
-| `ReviewServiceTests` | Las reglas de estado y los reintentos, con repositorio y cliente falsos |
-| `ReviewRepositoryTests` | Migraciones, mapeo de entidades (incluido JSON) y consultas |
+| `ReviewServiceTests` | Las reglas de estado, los reintentos y el resumen de estadísticas, con repositorio y cliente falsos |
+| `ReviewRepositoryTests` | Migraciones, mapeo de entidades (incluido JSON) y consultas, también las agrupaciones del panel |
 
 `FakeAiService` es un servidor HTTP mínimo en un puerto libre que hace de ai-service en los tests.
 
