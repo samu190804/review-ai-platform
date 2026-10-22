@@ -5,6 +5,8 @@ Aquí se mide qué tan bien funcionan las dos piezas del `ai-service` con un con
 - **Puntuación** (`app/rating.py`): de 1 a 5 estrellas.
 - **Moderación** (`app/moderation.py`): reglas más un modelo de toxicidad, con el umbral `TOXIC_THRESHOLD`.
 
+> **Aviso de contenido.** El dataset de esta evaluación incluye insultos, amenazas, contenido sexual y spam. Se escribieron a propósito para poder medir la moderación, igual que hacen los datasets públicos de detección de toxicidad, y no reflejan ninguna opinión del autor.
+
 El objetivo es doble: conocer las limitaciones reales de cada modelo y elegir el umbral de toxicidad con datos, en lugar de dejar un valor puesto a ojo. El análisis completo, con el código, está en el notebook [notebooks/evaluation.ipynb](notebooks/evaluation.ipynb), que GitHub muestra con sus tablas y gráficas.
 
 ## Modelos evaluados

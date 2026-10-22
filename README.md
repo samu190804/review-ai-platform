@@ -53,7 +53,7 @@ Frontend (Angular)  -->  Backend (Spring Boot + PostgreSQL)  -->  AI service (Fa
 
 ## Evaluación de los modelos
 
-Se midieron los dos modelos con 200 reseñas en español etiquetadas a mano. El detalle, con el código y las gráficas, está en [evaluation/](evaluation/README.md).
+Se midieron los dos modelos con 200 reseñas en español etiquetadas a mano. El dataset incluye a propósito insultos, amenazas y contenido sexual, para poder medir la moderación. El detalle, con el código y las gráficas, está en [evaluation/](evaluation/README.md).
 
 - **Puntuación.** El 63.6 % de las reseñas recibe la puntuación exacta y el 96.5 % se queda a una estrella como máximo (error medio de 0.42 estrellas). Va bien en 1★ y 5★ y peor en las intermedias.
 - **Moderación.** Con el umbral de toxicidad en 0.90, precision 0.93 y recall 0.80. El umbral se subió desde 0.65 para no bloquear reseñas legítimas. El punto débil son las amenazas, que Detoxify casi no detecta en español.
