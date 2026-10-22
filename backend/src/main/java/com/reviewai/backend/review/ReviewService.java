@@ -1,6 +1,8 @@
 package com.reviewai.backend.review;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -121,5 +123,28 @@ public class ReviewService {
 
 	public Page<Review> list(ReviewStatus status, Pageable pageable) {
 		return status == null ? repository.findAll(pageable) : repository.findByStatus(status, pageable);
+	}
+
+	/**
+	 * Resumen para el panel. Los conteos se hacen en la base de datos; aquí solo se
+	 * rellenan con 0 los estados y puntuaciones que no tienen reseñas.
+	 */
+	public ReviewStats stats() {
+		Map<ReviewStatus, Long> byStatus = new LinkedHashMap<>();
+		for (ReviewStatus status : List.of(ReviewStatus.APPROVED, ReviewStatus.REJECTED, ReviewStatus.PENDING)) {
+			byStatus.put(status, 0L);
+		}
+		repository.countGroupedByStatus().forEach(row -> byStatus.put(row.getStatus(), row.getTotal()));
+
+		Map<Integer, Long> starsDistribution = new LinkedHashMap<>();
+		for (int stars = 1; stars <= 5; stars++) {
+			starsDistribution.put(stars, 0L);
+		}
+		repository.countGroupedByStars().forEach(row -> starsDistribution.put(row.getStars().intValue(), row.getTotal()));
+
+		long total = byStatus.values().stream().mapToLong(Long::longValue).sum();
+		Double average = repository.averageConfidence();
+		return new ReviewStats(total, byStatus, starsDistribution,
+				average == null ? null : Math.round(average * 100) / 100.0);
 	}
 }

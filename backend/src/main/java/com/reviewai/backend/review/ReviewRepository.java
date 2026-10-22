@@ -30,4 +30,28 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 			""")
 	List<Review> findRetryable(@Param("status") ReviewStatus status, @Param("maxAttempts") int maxAttempts,
 			Pageable pageable);
+
+	/** Consultas del panel de análisis: se agrupa en la base de datos, no en memoria. */
+	@Query("select r.status as status, count(r) as total from Review r group by r.status")
+	List<StatusCount> countGroupedByStatus();
+
+	@Query("select r.stars as stars, count(r) as total from Review r where r.stars is not null group by r.stars")
+	List<StarsCount> countGroupedByStars();
+
+	/** Null si no hay ninguna reseña con confianza (avg ignora los nulos). */
+	@Query("select avg(r.confidence) from Review r")
+	Double averageConfidence();
+
+	/** Proyecciones: Spring rellena estas interfaces con las columnas de los alias de arriba. */
+	interface StatusCount {
+		ReviewStatus getStatus();
+
+		long getTotal();
+	}
+
+	interface StarsCount {
+		Short getStars();
+
+		long getTotal();
+	}
 }

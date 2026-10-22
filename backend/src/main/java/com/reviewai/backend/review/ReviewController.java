@@ -43,6 +43,12 @@ public class ReviewController {
 		return PageResponse.from(service.list(status, pageable), ReviewResponse::from);
 	}
 
+	/** Resumen para el panel de análisis. Spring prefiere esta ruta fija a "/{id}". */
+	@GetMapping("/stats")
+	public ReviewStats stats() {
+		return service.stats();
+	}
+
 	@GetMapping("/{id}")
 	public ReviewResponse get(@PathVariable Long id) {
 		return ReviewResponse.from(service.get(id));
