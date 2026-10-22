@@ -207,6 +207,41 @@ class ReviewApiIntegrationTests {
 				.andExpect(status().isBadRequest());
 	}
 
+	// ---- Estadísticas ----
+
+	@Test
+	void statsOfAnEmptyDatabaseHaveTheFullShapeWithZeros() throws Exception {
+		mockMvc.perform(get("/api/reviews/stats"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(0))
+				.andExpect(jsonPath("$.byStatus.APPROVED").value(0))
+				.andExpect(jsonPath("$.byStatus.REJECTED").value(0))
+				.andExpect(jsonPath("$.byStatus.PENDING").value(0))
+				.andExpect(jsonPath("$.starsDistribution['1']").value(0))
+				.andExpect(jsonPath("$.starsDistribution['5']").value(0))
+				.andExpect(jsonPath("$.averageConfidence").isEmpty());
+	}
+
+	@Test
+	void statsSummariseReviewsCreatedThroughTheApi() throws Exception {
+		postText("Primera reseña, aceptada por el modelo.").andExpect(status().isCreated());
+		postText("Segunda reseña, también aceptada.").andExpect(status().isCreated());
+		FAKE_AI.respondWith(200, FakeAiService.FLAGGED);
+		postText("Tercera reseña, rechazada por moderación.").andExpect(status().isCreated());
+		FAKE_AI.respondWith(500, FakeAiService.INTERNAL_ERROR);
+		postText("Cuarta reseña, queda pendiente de análisis.").andExpect(status().isCreated());
+
+		mockMvc.perform(get("/api/reviews/stats"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.total").value(4))
+				.andExpect(jsonPath("$.byStatus.APPROVED").value(2))
+				.andExpect(jsonPath("$.byStatus.REJECTED").value(1))
+				.andExpect(jsonPath("$.byStatus.PENDING").value(1))
+				.andExpect(jsonPath("$.starsDistribution['2']").value(2))
+				.andExpect(jsonPath("$.starsDistribution['5']").value(0))
+				.andExpect(jsonPath("$.averageConfidence").value(0.71));
+	}
+
 	// ---- Reintentos ----
 
 	@Test

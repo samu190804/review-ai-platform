@@ -2,6 +2,7 @@ package com.reviewai.backend.review;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -39,6 +40,60 @@ class ReviewServiceTests {
 		service = new ReviewService(repository, aiClient);
 		// save() devuelve lo mismo que recibe.
 		when(repository.save(any(Review.class))).thenAnswer(call -> call.getArgument(0));
+	}
+
+	private static ReviewRepository.StatusCount statusCount(ReviewStatus status, long total) {
+		ReviewRepository.StatusCount row = mock(ReviewRepository.StatusCount.class);
+		when(row.getStatus()).thenReturn(status);
+		when(row.getTotal()).thenReturn(total);
+		return row;
+	}
+
+	private static ReviewRepository.StarsCount starsCount(int stars, long total) {
+		ReviewRepository.StarsCount row = mock(ReviewRepository.StarsCount.class);
+		when(row.getStars()).thenReturn((short) stars);
+		when(row.getTotal()).thenReturn(total);
+		return row;
+	}
+
+	@Test
+	void statsAddsUpTheTotalAndRoundsTheAverage() {
+		// Los mocks de las filas se crean antes: no se pueden anidar dentro de un when(...).
+		var statusRows = List.of(statusCount(ReviewStatus.APPROVED, 7), statusCount(ReviewStatus.REJECTED, 2),
+				statusCount(ReviewStatus.PENDING, 1));
+		var starsRows = List.of(starsCount(5, 4), starsCount(2, 3));
+		when(repository.countGroupedByStatus()).thenReturn(statusRows);
+		when(repository.countGroupedByStars()).thenReturn(starsRows);
+		when(repository.averageConfidence()).thenReturn(0.71428571);
+
+		ReviewStats stats = service.stats();
+
+		assertThat(stats.total()).isEqualTo(10);
+		assertThat(stats.byStatus()).containsEntry(ReviewStatus.APPROVED, 7L)
+				.containsEntry(ReviewStatus.REJECTED, 2L).containsEntry(ReviewStatus.PENDING, 1L);
+		assertThat(stats.starsDistribution()).containsEntry(5, 4L).containsEntry(2, 3L);
+		assertThat(stats.averageConfidence()).isEqualTo(0.71);
+	}
+
+	@Test
+	void statsFillsMissingStatesAndStarsWithZeroInAFixedOrder() {
+		var statusRows = List.of(statusCount(ReviewStatus.REJECTED, 3));
+		var starsRows = List.of(starsCount(3, 1));
+		when(repository.countGroupedByStatus()).thenReturn(statusRows);
+		when(repository.countGroupedByStars()).thenReturn(starsRows);
+		when(repository.averageConfidence()).thenReturn(null);
+
+		ReviewStats stats = service.stats();
+
+		assertThat(stats.byStatus()).containsExactly(
+				entry(ReviewStatus.APPROVED, 0L),
+				entry(ReviewStatus.REJECTED, 3L),
+				entry(ReviewStatus.PENDING, 0L));
+		assertThat(stats.starsDistribution()).containsExactly(
+				entry(1, 0L), entry(2, 0L),
+				entry(3, 1L), entry(4, 0L),
+				entry(5, 0L));
+		assertThat(stats.averageConfidence()).isNull();
 	}
 
 	@Test
