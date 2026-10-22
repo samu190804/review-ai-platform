@@ -12,5 +12,10 @@ export const routes: Routes = [
     title: 'Historial · Review AI',
     loadComponent: () => import('./pages/history/history-page').then((m) => m.HistoryPage),
   },
+  {
+    path: 'estadisticas',
+    title: 'Estadísticas · Review AI',
+    loadComponent: () => import('./pages/stats/stats-page').then((m) => m.StatsPage),
+  },
   { path: '**', redirectTo: 'analizar' },
 ];
