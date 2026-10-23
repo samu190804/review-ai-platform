@@ -4,9 +4,13 @@ Plataforma de análisis de reseñas con inteligencia artificial. Se le da el tex
 
 Es un proyecto de portfolio, organizado como monorepo.
 
-## Estado
+## Capturas
 
-En desarrollo. Fases 0 a 3 completadas: el backend y el frontend funcionan y tienen tests (Spring Security se añadirá al final). La evaluación de los modelos (fase 4) está hecha, con sus resultados en [evaluation/](evaluation/README.md). Ver el plan más abajo.
+| Analizar una reseña | Resultado |
+|---|---|
+| ![Formulario para analizar una reseña](docs/images/analizar-vacio.png) | ![Reseña aprobada con sus estrellas](docs/images/analizar-resultado.png) |
+| **Historial** | **Estadísticas** |
+| ![Historial con filtro por estado](docs/images/historial.png) | ![Panel de estadísticas con gráficas](docs/images/estadisticas.png) |
 
 ## Arquitectura
 
@@ -23,9 +27,10 @@ Frontend (Angular)  -->  Backend (Spring Boot + PostgreSQL)  -->  AI service (Fa
 | Carpeta | Contenido |
 |---|---|
 | `ai-service/` | Microservicio de IA en Python con FastAPI |
-| `backend/` | API REST en Spring Boot con PostgreSQL y validación (la seguridad llegará al final) |
+| `backend/` | API REST en Spring Boot con PostgreSQL y validación (sin autenticación por ahora) |
 | `frontend/` | Aplicación Angular con Tailwind: analizar una reseña, historial con filtro y paginación, y estadísticas con gráficas (Chart.js) |
 | `evaluation/` | Dataset etiquetado a mano y notebook que mide la calidad de los modelos ([README](evaluation/README.md)) |
+| `scripts/` | Reseñas de demo en CSV y un script que las carga en el backend |
 | `docs/api.md` | Contrato JSON entre `ai-service` y `backend` (fuente de verdad) |
 | `docs/backend-api.md` | API REST del backend, la que usa el frontend |
 
@@ -49,7 +54,9 @@ Frontend (Angular)  -->  Backend (Spring Boot + PostgreSQL)  -->  AI service (Fa
 2. Backend Spring Boot y PostgreSQL
 3. Frontend Angular
 4. Evaluación del modelo: MAE, accuracy y matriz de confusión. El umbral de toxicidad se elige con un CSV propio de reseñas etiquetadas.
-5. Panel de análisis, tests, Docker Compose, CI y despliegue
+5. Panel de análisis, tests, Docker Compose y despliegue (con Docker Compose, en local)
+
+Las seis fases están completadas y el proyecto se da por terminado. La CI y Spring Security no se incluyeron y quedan como mejoras futuras, junto con el resto de [Ideas pendientes](#ideas-pendientes).
 
 ## Evaluación de los modelos
 
@@ -126,6 +133,25 @@ npm start
 
 Con `npm start` el frontend reenvía `/api` al backend con un proxy de desarrollo.
 
+### Datos de demo
+
+Con la base de datos vacía, el historial y las estadísticas no enseñan nada. [scripts/demo_reviews.csv](scripts/demo_reviews.csv) tiene 40 reseñas en español, redactadas para este proyecto: 31 normales con puntuaciones variadas y 9 que la moderación debería marcar (insultos, amenazas, enlaces y spam). Están mezcladas, para que las rechazadas no salgan todas juntas.
+
+Con el backend en marcha (en Docker o en local), desde la raíz del repo:
+
+```powershell
+python scripts/seed_reviews.py
+```
+
+El script solo usa la librería estándar de Python. Envía cada reseña a `POST /api/reviews`, así que pasan por la moderación y el modelo reales, y muestra el estado y las estrellas de cada una. La columna `esperado` del CSV no se envía: sirve para avisar si algún estado no coincide con lo previsto (las amenazas son el punto débil de la moderación). Si el backend no está en el puerto 8080, se indica con `--url`.
+
+El script no comprueba duplicados: si se ejecuta dos veces, quedan 80 reseñas. Para empezar de cero hay que borrar también el volumen de la base de datos (esto elimina todas las reseñas guardadas):
+
+```powershell
+docker compose down -v
+docker compose up -d
+```
+
 ### Base de datos con interfaz web
 
 Opcional, para ver y editar la base de datos con pgAdmin (http://localhost:5050):
@@ -136,10 +162,10 @@ docker compose --profile tools up -d pgadmin
 
 ## Ideas pendientes
 
-- Carga masiva: subir un CSV con muchas reseñas y procesarlas por lotes.
+- Carga masiva desde la aplicación: subir un CSV con muchas reseñas y procesarlas por lotes. Hoy solo existe el script de demo.
 - Decidir qué muestra la vista pública. Hoy el listado devuelve también las reseñas rechazadas, con su texto.
 - Reintento manual de una reseña `PENDING` que agotó sus intentos.
-- Spring Security, al final.
+- Spring Security.
 - Integración continua (CI) con GitHub Actions: ejecutar los tests de `ai-service`, `backend` y `frontend` y construir las imágenes en cada `push`.
 - Los puertos de PostgreSQL y del servicio de IA en `docker-compose.yml` están abiertos a toda la red; convendría limitarlos a `127.0.0.1`, como el backend y el frontend.
 - Frontend: tras enviar una reseña que queda `PENDING`, enlazar al historial filtrado por "Pendientes" (para eso el filtro tendría que leerse de la URL). Hoy el historial no se actualiza solo: hay que pulsar "Actualizar".
