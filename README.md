@@ -73,22 +73,49 @@ La respuesta incluye `moderation`, `rating` y `model_version`.
 
 ## Cómo ejecutarlo
 
-Requisitos: Docker Desktop y Java 21. Copiar `.env.example` a `.env` y cambiar la contraseña.
+Hay dos formas de ejecutarlo. En las dos hay que copiar `.env.example` a `.env` y cambiar la contraseña (`DB_PASSWORD`).
 
-Desde la raíz del repo, el servicio de IA y la base de datos:
+### Todo en Docker
+
+Es lo más simple: un solo comando levanta la base de datos, el servicio de IA, el backend y el frontend. Solo hace falta Docker Desktop. Desde la raíz del repo:
+
+```powershell
+docker compose up -d --build
+```
+
+La primera vez tarda varios minutos, porque se construyen las cuatro imágenes y la del servicio de IA descarga los modelos (más de 1 GB). Las siguientes veces reutilizan la caché y arrancan en segundos. Los servicios esperan unos a otros: el backend no arranca hasta que PostgreSQL y el servicio de IA están sanos, y el frontend espera al backend.
+
+| Servicio | Dirección |
+|---|---|
+| **Aplicación (frontend)** | http://localhost:4200 |
+| Backend | http://localhost:8080 (`/actuator/health`, `/api/reviews`) |
+| Servicio de IA | http://localhost:8000 (`/health`) |
+| PostgreSQL | `localhost:5432` |
+
+El frontend lo sirve nginx, que además reenvía `/api` al backend: el navegador solo habla con el puerto 4200. El backend y el frontend solo escuchan en `127.0.0.1`, porque la API todavía no tiene autenticación.
+
+```powershell
+docker compose ps                  # estado y salud de cada servicio
+docker compose logs -f backend     # logs de un servicio
+docker compose down                # parar y borrar los contenedores; los datos se conservan
+docker compose down -v             # además borra la base de datos
+```
+
+Si ya tienes algo en el puerto 4200 u 8080 (por ejemplo `npm start` o `mvnw spring-boot:run`), o lo paras, o cambias los puertos de la aplicación en `.env` con `FRONTEND_PORT` y `BACKEND_PORT`.
+
+### Para desarrollar
+
+Se levantan en Docker solo el servicio de IA y la base de datos, y el backend y el frontend se ejecutan en tu máquina, con recarga automática. Requisitos: Docker Desktop, Java 21 y Node.
 
 ```powershell
 docker compose up -d --build postgres ai-service
 ```
 
-La primera vez tarda, porque descarga los modelos. Después, el backend desde `backend/` (los comandos y la configuración de Java están en su [README](backend/README.md)):
+Después, el backend desde `backend/` (los comandos y la configuración de Java están en su [README](backend/README.md)):
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
-
-- AI service: http://localhost:8000 (`/health`)
-- Backend: http://localhost:8080 (`/actuator/health`, `/api/reviews`)
 
 Por último, el frontend desde `frontend/` (más detalles en su [README](frontend/README.md)):
 
@@ -97,9 +124,11 @@ npm install   # solo la primera vez
 npm start
 ```
 
-- Frontend: http://localhost:4200. Reenvía `/api` al backend con un proxy de desarrollo.
+Con `npm start` el frontend reenvía `/api` al backend con un proxy de desarrollo.
 
-Opcional, para ver y editar la base de datos con una interfaz web (pgAdmin en http://localhost:5050):
+### Base de datos con interfaz web
+
+Opcional, para ver y editar la base de datos con pgAdmin (http://localhost:5050):
 
 ```powershell
 docker compose --profile tools up -d pgadmin
@@ -111,6 +140,8 @@ docker compose --profile tools up -d pgadmin
 - Decidir qué muestra la vista pública. Hoy el listado devuelve también las reseñas rechazadas, con su texto.
 - Reintento manual de una reseña `PENDING` que agotó sus intentos.
 - Spring Security, al final.
+- Integración continua (CI) con GitHub Actions: ejecutar los tests de `ai-service`, `backend` y `frontend` y construir las imágenes en cada `push`.
+- Los puertos de PostgreSQL y del servicio de IA en `docker-compose.yml` están abiertos a toda la red; convendría limitarlos a `127.0.0.1`, como el backend y el frontend.
 - Frontend: tras enviar una reseña que queda `PENDING`, enlazar al historial filtrado por "Pendientes" (para eso el filtro tendría que leerse de la URL). Hoy el historial no se actualiza solo: hay que pulsar "Actualizar".
 - Frontend: un texto de solo emojis puede pasar el mínimo de 10 caracteres en JavaScript (UTF-16) y no en Python, y acabar en un 502.
 - El límite de 2000 caracteres se cuenta distinto en Java (UTF-16) y en Python (caracteres): un texto con emojis justo en el límite podría dar un 502.
