@@ -104,6 +104,12 @@ docker compose --profile tools up -d pgadmin
 
 Usarlo para ver y corregir datos, pero no para cambiar el esquema: eso se hace con migraciones de Flyway. Y `flyway_schema_history` no se toca.
 
+## En Docker
+
+El backend también se puede ejecutar como contenedor, junto al resto del sistema (`docker compose up -d --build` desde la raíz, ver el [README raíz](../README.md)). Su `Dockerfile` tiene dos etapas: una con el JDK compila el proyecto con `mvnw` y otra, solo con el JRE de Java 21, ejecuta el `.jar`. La imagen no lleva Maven ni el código fuente y corre como un usuario sin privilegios.
+
+Dentro de Docker, `docker-compose.yml` fija `DB_URL` y `AI_SERVICE_URL` con los nombres de los servicios (`postgres`, `ai-service`) y toma `DB_USER` y `DB_PASSWORD` de `.env`. Los `DB_URL` y `AI_SERVICE_URL` del `.env` son para ejecutarlo fuera de Docker. El contenedor no ejecuta los tests: necesitan Docker (Testcontainers) y se lanzan desde fuera con `.\mvnw.cmd test`.
+
 ## Tests
 
 ```powershell

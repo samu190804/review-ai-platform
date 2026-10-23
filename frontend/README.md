@@ -57,6 +57,10 @@ Sin librería de UI ni gestor de estado: Tailwind en las plantillas y servicios 
 
 `PENDING` no es un error: el backend responde 201 y la reseña ya está guardada. Cuando se resuelve, en el historial hay que pulsar **Actualizar** para verla cambiar.
 
+## En Docker
+
+El `Dockerfile` compila Angular con Node 24 y sirve el resultado con nginx (`nginx.conf`), sin Node en la imagen final. nginx hace tres cosas: reenvía `/api` al backend (lo mismo que `proxy.conf.json` en desarrollo), devuelve `index.html` para cualquier ruta que no sea un archivo (así funcionan `/historial` o `/estadisticas` al recargar) y guarda un año en caché los archivos con hash en el nombre, pero no `index.html`. Se levanta con el resto del sistema: `docker compose up -d --build` desde la raíz (ver el [README raíz](../README.md)).
+
 ## Tests
 
 No necesitan backend ni Docker: las peticiones se interceptan con `HttpTestingController`. Hay uno por cada pieza (servicio, errores, `ReviewResult`, las tres pantallas y la cabecera). jsdom no tiene canvas, así que los tests de las gráficas no las dibujan: `ChartCanvas` recibe su fábrica por un token (`CHART_FACTORY`), los tests inyectan una falsa y comprueban qué configuración se le pide.
