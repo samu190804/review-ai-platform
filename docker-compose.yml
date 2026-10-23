@@ -29,6 +29,40 @@ services:
       retries: 10
     restart: unless-stopped
 
+  backend:
+    build: ./backend
+    image: review-backend
+    container_name: review-backend
+    ports:
+      # Solo en 127.0.0.1: la API todavía no tiene autenticación (Spring Security llegará al final).
+      - "127.0.0.1:${BACKEND_PORT:-8080}:8080"
+    environment:
+      # Dentro de Docker los servicios se llaman por su nombre, no por localhost: por eso estas
+      # dos variables se fijan aquí y no se leen del DB_URL / AI_SERVICE_URL de .env, que son
+      # para cuando el backend se ejecuta fuera de Docker (mvnw spring-boot:run).
+      DB_URL: jdbc:postgresql://postgres:5432/reviews
+      AI_SERVICE_URL: http://ai-service:8000
+      DB_USER: ${DB_USER:?Define DB_USER en .env}
+      DB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    image: review-frontend
+    container_name: review-frontend
+    ports:
+      # La aplicación: http://localhost:4200. nginx reenvía /api al backend.
+      - "127.0.0.1:${FRONTEND_PORT:-4200}:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
   # Interfaz web para ver y gestionar la base de datos. Solo para desarrollo:
   # no arranca con un "up" normal, hay que pedirlo con --profile tools.
   pgadmin:
