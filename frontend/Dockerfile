@@ -24,5 +24,6 @@ COPY --from=build /build/dist/frontend/browser /usr/share/nginx/html
 
 EXPOSE 8080
 
+# 127.0.0.1 y no localhost: dentro de la imagen "localhost" se resuelve a IPv6 y nginx solo escucha en IPv4.
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget --quiet --spider http://localhost:8080/ || exit 1
+    CMD wget --quiet --spider http://127.0.0.1:8080/ || exit 1
